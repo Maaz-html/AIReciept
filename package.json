@@ -1,12 +1,13 @@
 {
-  "name": "credex-spend-audit",
+  "name": "spend-smart-ai",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "vitest run"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.95.0",
