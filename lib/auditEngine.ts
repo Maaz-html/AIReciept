@@ -20,6 +20,7 @@ export type ToolAuditResult = {
   recommendedAction: string
   potentialMonthlySavings: number
   isOptimal: boolean
+  reasoning: string
 }
 
 export type AuditResult = {
@@ -33,12 +34,13 @@ export function runAudit(formData: FormData): AuditResult {
   const toolResults: ToolAuditResult[] = formData.tools.map((input) => {
     const tool = TOOLS.find((t) => t.id === input.toolId)
     const plan = tool?.plans.find((p) => p.name === input.planName)
-    
+
     const toolName = tool?.displayName || input.toolId
     const currentCost = input.monthlySpend
     let recommendedAction = 'Your current setup is already optimal.'
     let potentialMonthlySavings = 0
     let isOptimal = true
+    let reasoning = 'Based on our current database, your plan is priced correctly.'
 
     if (!tool || !plan) {
       return {
@@ -48,6 +50,7 @@ export function runAudit(formData: FormData): AuditResult {
         recommendedAction: 'Tool or plan not found in database.',
         potentialMonthlySavings: 0,
         isOptimal: true,
+        reasoning: 'We do not have pricing data for this specific configuration.',
       }
     }
 
@@ -57,6 +60,7 @@ export function runAudit(formData: FormData): AuditResult {
       recommendedAction = `You are paying more than the list price of $${listPrice}. Contact billing for a review.`
       potentialMonthlySavings = input.monthlySpend - listPrice
       isOptimal = false
+      reasoning = `The standard price for ${input.seats} seats on the ${input.planName} plan is $${listPrice}.`
     }
 
     // Rule A: Team plan with ≤2 seats → recommend Pro/Plus downgrade
@@ -68,6 +72,7 @@ export function runAudit(formData: FormData): AuditResult {
           recommendedAction = `Downgrade to ${individualPlan.name} as you have ≤2 seats. Save on team overhead.`
           potentialMonthlySavings = currentCost - individualCost
           isOptimal = false
+          reasoning = `The ${input.planName} plan is designed for teams; individual plans are cheaper for ≤2 users.`
         }
       }
     }
@@ -81,6 +86,7 @@ export function runAudit(formData: FormData): AuditResult {
           recommendedAction = `Switch to Cursor Pro for a better coding experience and lower cost.`
           potentialMonthlySavings = currentCost - cursorCost
           isOptimal = false
+          reasoning = `Cursor Pro includes advanced coding features that replace the need for separate ChatGPT/Claude Plus subscriptions.`
         }
       }
     }
@@ -92,6 +98,7 @@ export function runAudit(formData: FormData): AuditResult {
       recommendedAction,
       potentialMonthlySavings: Math.max(0, potentialMonthlySavings),
       isOptimal,
+      reasoning,
     }
   })
 

@@ -17,7 +17,10 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Trash2, Plus, ArrowRight, Info } from "lucide-react"
 import Link from "next/link"
 
+import { useRouter } from "next/navigation"
+
 export default function AuditPage() {
+  const router = useRouter()
   const [formData, setFormData] = useState<FormData>({
     tools: [{ toolId: TOOLS[0].id, planName: TOOLS[0].plans[0].name, monthlySpend: 0, seats: 1 }],
     teamSize: 1,
@@ -25,6 +28,8 @@ export default function AuditPage() {
   })
 
   const [isLoaded, setIsLoaded] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   // Load from localStorage on mount
   useEffect(() => {
@@ -84,11 +89,33 @@ export default function AuditPage() {
     })
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log("Form Data Submitted:", formData)
-    // Tomorrow we wire up the API call
+    setIsSubmitting(true)
+    setError(null)
+
+    try {
+      const response = await fetch('/api/audit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.details || 'Failed to submit audit')
+      }
+
+      const data = await response.json()
+      router.push(`/results/${data.id}`)
+    } catch (err: any) {
+      console.error('Submission error:', err)
+      setError(err.message || 'Something went wrong. Please try again.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
+
 
   if (!isLoaded) return <div className="min-h-screen bg-slate-950" />
 
@@ -270,19 +297,28 @@ export default function AuditPage() {
             </div>
           </div>
 
+          {error && (
+            <div className="bg-red-500/10 border border-red-500/50 text-red-400 p-4 rounded-xl text-center">
+              {error}
+            </div>
+          )}
+
           <div className="flex flex-col items-center pt-12">
             <Button 
               type="submit" 
               size="lg" 
-              className="w-full md:w-auto min-w-[320px] bg-green-600 hover:bg-green-500 text-white font-bold py-8 text-xl rounded-2xl shadow-2xl shadow-green-900/40 transition-all hover:scale-[1.02] active:scale-[0.98]"
+              disabled={isSubmitting}
+              className="w-full md:w-auto min-w-[320px] bg-green-600 hover:bg-green-500 text-white font-bold py-8 text-xl rounded-2xl shadow-2xl shadow-green-900/40 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Run My Audit <ArrowRight className="ml-2 h-6 w-6" />
+              {isSubmitting ? "Running Audit..." : "Run My Audit"}
+              {!isSubmitting && <ArrowRight className="ml-2 h-6 w-6" />}
             </Button>
             <div className="flex items-center gap-2 mt-8 text-slate-500 text-sm">
               <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
               <span>Free Forever for Credex Customers</span>
             </div>
           </div>
+
         </form>
       </div>
     </div>
