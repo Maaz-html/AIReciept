@@ -4,12 +4,13 @@ export type ToolInput = {
   toolId: string
   planName: string
   seats: number
-  pricePaid: number
+  monthlySpend: number
 }
 
 export type FormData = {
-  useCase: UseCase
   tools: ToolInput[]
+  teamSize: number
+  primaryUseCase: UseCase
 }
 
 export type ToolAuditResult = {
@@ -34,7 +35,7 @@ export function runAudit(formData: FormData): AuditResult {
     const plan = tool?.plans.find((p) => p.name === input.planName)
     
     const toolName = tool?.displayName || input.toolId
-    const currentCost = input.pricePaid
+    const currentCost = input.monthlySpend
     let recommendedAction = 'Your current setup is already optimal.'
     let potentialMonthlySavings = 0
     let isOptimal = true
@@ -51,10 +52,10 @@ export function runAudit(formData: FormData): AuditResult {
     }
 
     // Rule C: Paying more than list price
-    if (plan.pricePerUser !== -1 && input.pricePaid > plan.pricePerUser * input.seats) {
+    if (plan.pricePerUser !== -1 && input.monthlySpend > plan.pricePerUser * input.seats) {
       const listPrice = plan.pricePerUser * input.seats
       recommendedAction = `You are paying more than the list price of $${listPrice}. Contact billing for a review.`
-      potentialMonthlySavings = input.pricePaid - listPrice
+      potentialMonthlySavings = input.monthlySpend - listPrice
       isOptimal = false
     }
 
@@ -72,7 +73,7 @@ export function runAudit(formData: FormData): AuditResult {
     }
 
     // Rule B: Coding use case on ChatGPT or Claude → recommend Cursor Pro
-    if (formData.useCase === 'coding' && (input.toolId === 'chatgpt' || input.toolId === 'claude')) {
+    if (formData.primaryUseCase === 'coding' && (input.toolId === 'chatgpt' || input.toolId === 'claude')) {
       const cursorPro = TOOLS.find(t => t.id === 'cursor')?.plans.find(p => p.name === 'Pro')
       if (cursorPro) {
         const cursorCost = cursorPro.pricePerUser * input.seats
@@ -113,3 +114,4 @@ export function runAudit(formData: FormData): AuditResult {
     savingsTier,
   }
 }
+
