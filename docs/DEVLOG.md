@@ -14,3 +14,11 @@
 - Challenge: \[any issue you hit]
 - Tomorrow: results page and audit engine integration
 
+## Day 3 - [09|05|2026]
+- Built POST /api/audit route: runs audit engine, saves to Supabase, returns ID
+- Built GET /api/audit/\[id] route: fetches audit from Supabase
+- Built results page at /results/\[id]
+- Wired up form submit → API → redirect to results
+- First real end-to-end test worked / had issues with \[X]
+- Savings calculation showing correctly: \[example numbers you tested]
+- Tomorrow: AI summary + email sending
