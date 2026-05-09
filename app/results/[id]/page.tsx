@@ -28,6 +28,8 @@ export default function ResultsPage() {
   const [audit, setAudit] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [copied, setCopied] = useState(false)
+  const [summary, setSummary] = useState<string>("")
+  const [summaryLoading, setSummaryLoading] = useState(true)
   const [emailSubmitting, setEmailSubmitting] = useState(false)
   const [emailSuccess, setEmailSuccess] = useState(false)
 
@@ -38,6 +40,9 @@ export default function ResultsPage() {
         if (response.ok) {
           const data = await response.json()
           setAudit(data)
+          
+          // Call summary API once audit data is loaded
+          fetchSummary(data.results)
         }
       } catch (err) {
         console.error("Fetch error:", err)
@@ -47,6 +52,25 @@ export default function ResultsPage() {
     }
     fetchAudit()
   }, [id])
+
+  async function fetchSummary(auditResult: AuditResult) {
+    try {
+      const response = await fetch('/api/summary', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ auditResult }),
+      })
+      if (response.ok) {
+        const data = await response.json()
+        setSummary(data.summary)
+      }
+    } catch (err) {
+      console.error("Summary error:", err)
+    } finally {
+      // Artifical delay for "wow" factor/loading states if it's too fast
+      setTimeout(() => setSummaryLoading(false), 1500)
+    }
+  }
 
   const copyToClipboard = () => {
     const url = window.location.href
@@ -59,32 +83,36 @@ export default function ResultsPage() {
     e.preventDefault()
     setEmailSubmitting(true)
     
-    const target = e.target as typeof e.target & {
-      email: { value: string };
-      company: { value: string };
-      role: { value: string };
-    }
+    const formData = new FormData(e.target as HTMLFormElement)
+    const email = formData.get('email') as string
+    const company = formData.get('company') as string
+    const role = formData.get('role') as string
+    const website = formData.get('website') as string // Honeypot
 
     try {
       const response = await fetch('/api/leads', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email: target.email.value,
-          company: target.company.value,
-          role: target.role.value,
+          email,
+          company_name: company,
+          role,
           audit_id: id,
+          monthly_savings: audit.results.totalMonthlySavings,
+          website, // Honeypot
         }),
       })
 
       if (response.ok) {
         setEmailSuccess(true)
       } else {
-        const errorData = await response.json()
-        console.error('Lead submission failed:', errorData.details)
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Lead submission failed with status:', response.status, errorData)
+        alert(`Something went wrong (Error ${response.status}). Try again.`)
       }
     } catch (err) {
       console.error('Lead error:', err)
+      alert("Something went wrong. Try again.")
     } finally {
       setEmailSubmitting(false)
     }
@@ -207,6 +235,33 @@ export default function ResultsPage() {
           </div>
         </div>
 
+        {/* AI SUMMARY SECTION */}
+        <div className="space-y-4">
+          <h2 className="text-xl font-bold flex items-center gap-2 text-slate-300">
+            <TrendingDown className="h-5 w-5 text-green-500" />
+            AI Executive Summary
+          </h2>
+          
+          <Card className="bg-slate-900/40 border-slate-800/50 overflow-hidden relative group">
+            {/* Background decorative element */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/5 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-green-500/10 transition-colors" />
+            
+            <CardContent className="p-6 md:p-8">
+              {summaryLoading ? (
+                <div className="space-y-3 animate-pulse">
+                  <div className="h-4 bg-slate-800 rounded w-3/4" />
+                  <div className="h-4 bg-slate-800 rounded w-full" />
+                  <div className="h-4 bg-slate-800 rounded w-5/6" />
+                </div>
+              ) : (
+                <p className="text-lg text-slate-300 leading-relaxed font-medium italic">
+                  "{summary}"
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
         {/* CREDEX PROMO BLOCK (High Savings) */}
         {results.savingsTier === 'high' && (
           <Card className="bg-slate-900 border-2 border-green-500/50 shadow-[0_0_40px_-15px_rgba(34,197,94,0.3)] overflow-hidden relative">
@@ -286,6 +341,7 @@ export default function ResultsPage() {
                   <Label htmlFor="email" className="text-slate-300">Email Address <span className="text-red-400">*</span></Label>
                   <Input 
                     id="email"
+                    name="email"
                     type="email" 
                     required 
                     placeholder="you@company.com"
@@ -296,6 +352,7 @@ export default function ResultsPage() {
                   <Label htmlFor="company" className="text-slate-300">Company Name</Label>
                   <Input 
                     id="company"
+                    name="company"
                     placeholder="Acme Inc"
                     className="bg-slate-950 border-slate-700 h-12 focus:ring-green-500/20"
                   />
@@ -304,8 +361,20 @@ export default function ResultsPage() {
                   <Label htmlFor="role" className="text-slate-300">Your Role</Label>
                   <Input 
                     id="role"
+                    name="role"
                     placeholder="CTO, Engineering Manager, etc."
                     className="bg-slate-950 border-slate-700 h-12 focus:ring-green-500/20"
+                  />
+                </div>
+                {/* Honeypot field - visually hidden */}
+                <div className="sr-only" aria-hidden="true">
+                  <Label htmlFor="website">Website</Label>
+                  <Input 
+                    id="website"
+                    name="website"
+                    tabIndex={-1}
+                    autoComplete="off"
+                    placeholder="Your website"
                   />
                 </div>
                 <Button 
