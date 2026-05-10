@@ -30,3 +30,12 @@
 - Added rate limiting (5 req/hour per IP) and honeypot field
 - Email delivery tested successfully ✅
 - AI summary showing on results page ✅
+
+## Day 5 — [10|05|2026]
+- Built /api/og dynamic image generation using @vercel/og
+- Added Open Graph and Twitter Card meta tags to results page
+- Deployed to Vercel: [your URL here]
+- Tested OG preview — working correctly
+- Share button copies URL to clipboard ✅
+- Share on Twitter link working ✅
+- Meta tags verified in page source ✅
