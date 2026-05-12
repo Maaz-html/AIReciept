@@ -63,8 +63,12 @@ export async function POST(req: NextRequest) {
     }
 
     // Send email via Resend
-    const origin = process.env.NEXT_PUBLIC_BASE_URL || req.nextUrl.origin
+    const host = req.headers.get('host')
+    const protocol = req.headers.get('x-forwarded-proto') || 'https'
+    const origin = process.env.NEXT_PUBLIC_BASE_URL || `${protocol}://${host}`
     const resultsUrl = `${origin}/results/${audit_id}`
+    
+    console.log('Sending email with resultsUrl:', resultsUrl)
     
     let htmlContent = `
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
