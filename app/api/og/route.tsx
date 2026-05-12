@@ -10,7 +10,6 @@ export async function GET(req: NextRequest) {
     // Parse params
     const savings = searchParams.get('savings')
     const tools = searchParams.get('tools')
-    const tier = searchParams.get('tier') || 'default'
 
     const savingsNum = savings ? parseInt(savings) : 0
     const toolsNum = tools ? parseInt(tools) : 0
@@ -163,8 +162,9 @@ export async function GET(req: NextRequest) {
         height: 630,
       }
     )
-  } catch (e: any) {
-    console.log(`${e.message}`)
+  } catch (e: unknown) {
+    const message = e instanceof Error ? e.message : 'Unknown error'
+    console.log(`${message}`)
     return new Response(`Failed to generate the image`, {
       status: 500,
     })

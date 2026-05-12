@@ -37,12 +37,12 @@ export default function AuditPage() {
     if (saved) {
       try {
         const parsed = JSON.parse(saved)
-        setFormData(parsed)
+        setTimeout(() => setFormData(parsed), 0)
       } catch (e) {
         console.error('Failed to load form data', e)
       }
     }
-    setIsLoaded(true)
+    setTimeout(() => setIsLoaded(true), 0)
   }, [])
 
   // Save to localStorage on change
@@ -108,9 +108,10 @@ export default function AuditPage() {
 
       const data = await response.json()
       router.push(`/results/${data.id}`)
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Submission error:', err)
-      setError(err.message || 'Something went wrong. Please try again.')
+      const message = err instanceof Error ? err.message : 'Something went wrong. Please try again.'
+      setError(message)
     } finally {
       setIsSubmitting(false)
     }
@@ -139,7 +140,7 @@ export default function AuditPage() {
             What AI tools is your team paying for?
           </h1>
           <p className="text-muted-foreground text-lg max-w-2xl font-medium">
-            Add all AI subscriptions. We'll identify seat consolidation, redundant tools, and plan optimization opportunities.
+            Add all AI subscriptions. We&apos;ll identify seat consolidation, redundant tools, and plan optimization opportunities.
           </p>
         </div>
 

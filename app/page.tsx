@@ -33,7 +33,7 @@ export default function LandingPage() {
                   Stop overpaying <span className="text-money-green">for AI tools</span>
                 </h1>
                 <p className="mx-auto max-w-[700px] text-muted-text md:text-xl lg:text-2xl leading-relaxed">
-                  Get a free, instant audit of your team's AI spend and discover hidden savings in minutes.
+                  Get a free, instant audit of your team&apos;s AI spend and discover hidden savings in minutes.
                 </p>
               </div>
               <div className="pt-4 animate-in fade-in slide-in-from-bottom-5 duration-1000 delay-200">

@@ -22,24 +22,18 @@ import Link from "next/link"
 
 interface ResultsClientProps {
   id: string
-  initialAudit: any
+  initialAudit: { results: AuditResult }
 }
 
 export default function ResultsClient({ id, initialAudit }: ResultsClientProps) {
-  const [audit, setAudit] = useState<any>(initialAudit)
+  const audit = initialAudit
   const [copied, setCopied] = useState(false)
   const [summary, setSummary] = useState<string>("")
   const [summaryLoading, setSummaryLoading] = useState(true)
   const [emailSubmitting, setEmailSubmitting] = useState(false)
   const [emailSuccess, setEmailSuccess] = useState(false)
 
-  useEffect(() => {
-    if (audit) {
-      fetchSummary(audit.results)
-    }
-  }, [audit])
-
-  async function fetchSummary(auditResult: AuditResult) {
+  const fetchSummary = async (auditResult: AuditResult) => {
     try {
       const response = await fetch('/api/summary', {
         method: 'POST',
@@ -57,6 +51,12 @@ export default function ResultsClient({ id, initialAudit }: ResultsClientProps) 
       setTimeout(() => setSummaryLoading(false), 1500)
     }
   }
+
+  useEffect(() => {
+    if (audit) {
+      setTimeout(() => fetchSummary(audit.results), 0)
+    }
+  }, [audit])
 
   const copyToClipboard = () => {
     const url = window.location.href
@@ -154,7 +154,7 @@ export default function ResultsClient({ id, initialAudit }: ResultsClientProps) 
                 </h1>
                 <div className="inline-block px-6 py-2 bg-money-green/20 border border-money-green/30 rounded-full">
                   <p className="text-xl md:text-2xl font-bold text-money-green">
-                    That's ${results.totalAnnualSavings.toLocaleString()} per year
+                    That&apos;s ${results.totalAnnualSavings.toLocaleString()} per year
                   </p>
                 </div>
               </div>
@@ -289,7 +289,7 @@ export default function ResultsClient({ id, initialAudit }: ResultsClientProps) 
               <div className="w-16 h-16 bg-money-green/10 rounded-2xl flex items-center justify-center mx-auto border border-money-green/20 mb-4">
                 <CheckCircle2 className="h-8 w-8 text-money-green" />
               </div>
-              <h2 className="text-3xl font-extrabold tracking-tighter text-platinum">You're spending well.</h2>
+              <h2 className="text-3xl font-extrabold tracking-tighter text-platinum">You&apos;re spending well.</h2>
               <p className="text-muted-foreground text-lg font-medium">No obvious optimisations right now based on our current data.</p>
             </div>
             
@@ -302,7 +302,7 @@ export default function ResultsClient({ id, initialAudit }: ResultsClientProps) 
               />
               <Button className="bg-platinum hover:bg-white text-background font-bold rounded-xl px-8 h-12 shadow-lg transition-all active:scale-[0.95]">Notify Me</Button>
             </div>
-            <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest relative z-10">We'll alert you when new optimization rules apply to your stack.</p>
+            <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest relative z-10">We&apos;ll alert you when new optimization rules apply to your stack.</p>
           </div>
         )}
 
@@ -346,7 +346,7 @@ export default function ResultsClient({ id, initialAudit }: ResultsClientProps) 
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
               <div className="space-y-2">
                 <CardTitle className="text-3xl font-extrabold tracking-tight text-platinum">Get a copy of this report</CardTitle>
-                <CardDescription className="text-muted-foreground text-lg font-medium">We'll send the full breakdown and optimization guide to your inbox.</CardDescription>
+                <CardDescription className="text-muted-foreground text-lg font-medium">We&apos;ll send the full breakdown and optimization guide to your inbox.</CardDescription>
               </div>
               <div className="w-16 h-16 bg-turquoise/10 rounded-3xl flex items-center justify-center border border-turquoise/20 shadow-inner">
                 <Mail className="h-8 w-8 text-turquoise" />
