@@ -82,7 +82,7 @@ export function runAudit(formData: FormData): AuditResult {
       const cursorPro = TOOLS.find(t => t.id === 'cursor')?.plans.find(p => p.name === 'Pro')
       if (cursorPro) {
         const cursorCost = cursorPro.pricePerUser * input.seats
-        if (cursorCost < currentCost - potentialMonthlySavings) {
+        if (cursorCost <= currentCost - potentialMonthlySavings) {
           recommendedAction = `Switch to Cursor Pro for a better coding experience and lower cost.`
           potentialMonthlySavings = currentCost - cursorCost
           isOptimal = false
