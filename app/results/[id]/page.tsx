@@ -2,6 +2,7 @@ import { Metadata } from 'next'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
 import ResultsClient from './ResultsClient'
 import { notFound } from 'next/navigation'
+import { headers } from 'next/headers'
 
 interface Props {
   params: Promise<{ id: string }>
@@ -37,7 +38,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   
   const title = `I could save $${totalMonthlySavings.toLocaleString()}/month on AI tools`
   const description = "Free AI spend audit — see how much your team is overpaying on Cursor, Claude, ChatGPT and more."
-  const ogImageUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/api/og?savings=${totalMonthlySavings}&tools=${toolCount}&tier=${results.savingsTier}`
+  const headersList = await headers()
+  const host = headersList.get('host')
+  const proto = headersList.get('x-forwarded-proto') || 'http'
+  const origin = process.env.NEXT_PUBLIC_BASE_URL || `${proto}://${host}`
+  
+  const ogImageUrl = `${origin}/api/og?savings=${totalMonthlySavings}&tools=${toolCount}&tier=${results.savingsTier}`
 
   return {
     title,

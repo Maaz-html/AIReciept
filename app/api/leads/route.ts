@@ -63,7 +63,8 @@ export async function POST(req: NextRequest) {
     }
 
     // Send email via Resend
-    const resultsUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/results/${audit_id}`
+    const origin = process.env.NEXT_PUBLIC_BASE_URL || req.nextUrl.origin
+    const resultsUrl = `${origin}/results/${audit_id}`
     
     let htmlContent = `
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
