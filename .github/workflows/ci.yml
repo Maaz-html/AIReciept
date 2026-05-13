@@ -18,6 +18,8 @@ jobs:
           cache: 'npm'
       - run: npm ci
       - name: Lint
-        run: npx next lint
+        run: npm run lint
+        env:
+          NEXT_LINT_DIRS: "."
       - name: Test
         run: npm run test
